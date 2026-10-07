@@ -1,0 +1,35 @@
+--- a/src/lerobot/utils/keyboard_input.py
++++ b/src/lerobot/utils/keyboard_input.py
+@@ -436,5 +436,32 @@
+             apply_recording_control("esc", events)
+         # other keys (incl. up/down) are intentionally ignored
+ 
++    _start_file_control_watcher(on_key, events)
+     listener = create_key_listener(on_key, controls_help="Right/Left/Esc, or n=next, r=re-record, q=quit")
+     return listener, events
++
++
++def _start_file_control_watcher(on_key: Callable[[str], None], events: dict) -> None:
++    """Accept recording controls from an external tool (e.g. a GUI) through a file.
++
++    Writing ``next``, ``redo`` or ``stop`` to ``$LEROBOT_CONTROL_FILE`` (default
++    ``/tmp/lerobot_control``) is equivalent to pressing n, r or q. Works headless,
++    where neither pynput nor a TTY is available.
++    """
++    path = os.environ.get("LEROBOT_CONTROL_FILE", "/tmp/lerobot_control")
++    keys = {"next": "n", "redo": "r", "stop": "q"}
++    with contextlib.suppress(FileNotFoundError):
++        os.unlink(path)
++
++    def watch() -> None:
++        while not events["stop_recording"]:
++            with contextlib.suppress(FileNotFoundError):
++                with open(path) as f:
++                    cmd = f.read().strip().lower()
++                os.unlink(path)
++                if cmd in keys:
++                    logger.info("Control file: %s", cmd)
++                    on_key(keys[cmd])
++            time.sleep(0.1)
++
++    threading.Thread(target=watch, daemon=True, name="lerobot-control-file").start()

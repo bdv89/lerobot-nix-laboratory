@@ -1,0 +1,28 @@
+# Résultats Nix
+result
+result-*
+
+# Python
+__pycache__/
+*.pyc
+.nicegui/
+
+# Ancien environnement pip / clone LeRobot 0.4.1 (remplacés par le flake)
+.venv/
+lerobot/
+.pre-nix-backup/
+
+# Données lourdes ou personnelles : datasets/modèles sur le Hugging Face Hub
+trained/
+outputs/
+
+# Notes personnelles
+.claude/
+CLAUDE.md
+standards/
+lerobot-gui/CLAUDE.md
+lerobot-gui/AGENTS.md
+
+# Restes Windows / pip
+lerobot-gui/start_gui.bat
+lerobot-gui/requirements.txt
