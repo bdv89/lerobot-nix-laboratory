@@ -23,8 +23,19 @@ in
   };
   image.baseName = lib.mkForce "lerobot-so101-live";
 
-  users.users.lerobot = {
-    isNormalUser = true;
+  # Aucun mot de passe : la session graphique (cage) s'ouvre sans login.
+  users.users.lerobot.isNormalUser = true;
+
+  # SSH par clé uniquement. Aucune clé n'est livrée : chacun ajoute la sienne
+  # à la construction de l'image (voir README, « Clé USB live »).
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = lib.mkForce "no";
+      AllowUsers = [ "lerobot" ];
+    };
   };
 
   services.lerobot = {

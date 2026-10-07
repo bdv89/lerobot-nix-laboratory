@@ -126,6 +126,18 @@ On démarre sur la clé : NixOS se lance, la GUI démarre et un Firefox plein é
 
 Test sans matériel : `qemu-system-x86_64 -enable-kvm -m 6G -cdrom result/iso/*.iso`.
 
+**Aucun mot de passe ni aucune clé n'est livré dans l'image.** La GUI s'ouvre sans login. SSH est actif, mais par clé uniquement : mot de passe refusé, root interdit, seul l'utilisateur `lerobot` est accepté. Pour pouvoir s'y connecter, on ajoute sa propre clé publique au moment de construire l'ISO :
+
+```bash
+nix build --impure --expr '
+  let live = (builtins.getFlake "github:bdv89/lerobot-nix-laboratory").nixosConfigurations.live;
+  in (live.extendModules { modules = [{
+    users.users.lerobot.openssh.authorizedKeys.keys = [ (builtins.readFile ~/.ssh/id_ed25519.pub) ];
+  }]; }).config.system.build.isoImage'
+
+ssh lerobot@<ip-de-la-machine>
+```
+
 ## Flux de travail SO-101
 
 Avec les scripts du dépôt (ports et caméra lus depuis `LEROBOT_FOLLOWER_PORT`, `LEROBOT_LEADER_PORT`, `LEROBOT_CAMERA`, `HF_USER`) :
