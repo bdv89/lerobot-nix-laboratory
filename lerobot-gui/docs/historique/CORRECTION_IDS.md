@@ -1,6 +1,6 @@
 # Correction: Ajout des IDs Robot et Téléop
 
-> **Note historique** : notes de correction d'octobre 2025 (Windows, ports COM, LeRobot 0.4). Le code et les commandes cités ont évolué depuis : voir le [README](./README.md) et le [CHANGELOG](./CHANGELOG.md).
+> **Note historique** : notes de correction d'octobre 2025 (Windows, ports COM, LeRobot 0.4). Le code et les commandes cités ont évolué depuis : voir le [README](../../README.md) et le [CHANGELOG](../../CHANGELOG.md).
 
 ## Problème identifié
 

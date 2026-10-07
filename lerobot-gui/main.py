@@ -748,7 +748,7 @@ def main_page():
 
     with ui.header().classes('items-center justify-between bg-gray-900'):
         ui.label('LeRobot SO-101').classes('text-2xl font-bold')
-        ui.label('v2.0').classes('text-sm text-gray-400')
+        ui.label('v2.2').classes('text-sm text-gray-400')
 
     with ui.tabs().classes('w-full') as tabs:
         tab_diagnostic = ui.tab('Diagnostic')

@@ -1,6 +1,6 @@
 # 🎉 LeRobot GUI v2.0 - Notes de Version
 
-> **Note historique** : ces notes décrivent la v2.0 (octobre 2025, sous Windows avec ports COM et LeRobot 0.4). Les commandes et chemins ci-dessous ne sont plus d'actualité : pour l'installation et l'usage actuels (flake Nix, LeRobot 0.6), voir le [README](./README.md) et le [CHANGELOG](./CHANGELOG.md).
+> **Note historique** : ces notes décrivent la v2.0 (octobre 2025, sous Windows avec ports COM et LeRobot 0.4). Les commandes et chemins ci-dessous ne sont plus d'actualité : pour l'installation et l'usage actuels (flake Nix, LeRobot 0.6), voir le [README](../../README.md) et le [CHANGELOG](../../CHANGELOG.md).
 
 ## 🚀 Mise à Jour Majeure : Connexion Asynchrone
 

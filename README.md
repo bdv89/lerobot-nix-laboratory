@@ -1,5 +1,10 @@
 # lerobot-nix-laboratory
 
+[![nix](https://github.com/bdv89/lerobot-nix-laboratory/actions/workflows/ci.yml/badge.svg)](https://github.com/bdv89/lerobot-nix-laboratory/actions/workflows/ci.yml)
+![LeRobot 0.6.0](https://img.shields.io/badge/LeRobot-0.6.0-yellow)
+![Nix flake](https://img.shields.io/badge/Nix-flake-5277C3?logo=nixos&logoColor=white)
+![Licence Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue)
+
 **Un bras robot [LeRobot SO-101](https://github.com/huggingface/lerobot) qui marche pareil sur n'importe quelle machine, grâce à Nix.**
 
 Une commande suffit pour obtenir exactement le même environnement que celui qui a servi à téléopérer le bras, enregistrer des démonstrations et entraîner une politique ACT : mêmes versions de Python, PyTorch, OpenCV, LeRobot et du pilote Feetech. Ce sont les mêmes versions **au bit près**, pas « à peu près ».
@@ -9,6 +14,10 @@ nix run github:bdv89/lerobot-nix-laboratory      # la GUI s'ouvre sur http://loc
 nix develop github:bdv89/lerobot-nix-laboratory  # un shell avec lerobot-record, lerobot-train, lerobot-rollout…
 nix build github:bdv89/lerobot-nix-laboratory#iso  # une clé USB qui démarre directement sur la GUI
 ```
+
+Pré-requis : [Nix](https://nixos.org/download/) avec les flakes activés, sur Linux x86_64. NixOS n'est nécessaire que pour le module système.
+
+![GUI LeRobot SO-101 : onglet Diagnostic](docs/gui-diagnostic.png)
 
 ## Pourquoi Nix ?
 
@@ -22,6 +31,20 @@ Ici, **`flake.lock` fige la révision exacte de nixpkgs**, donc toute la chaîne
 - **Modifications locales versionnées** : le petit patch apporté à LeRobot ([pkgs/lerobot-control-file.patch](pkgs/lerobot-control-file.patch)) est appliqué de façon déclarative, pas à la main dans un clone.
 - **Le système aussi est déclaratif** : udev, groupes et service sont décrits dans un module NixOS, pas dans un tutoriel de 15 étapes.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    lock["flake.lock<br/>(nixpkgs figé)"] --> nixpkgs["nixpkgs<br/>Python, torch, opencv,<br/>ffmpeg, LeRobot 0.6"]
+    nixpkgs --> lerobot["LeRobot + extras SO-101<br/>+ pilote Feetech<br/>+ patch local"]
+    lerobot --> gui["lerobot-gui<br/>(NiceGUI)"]
+    lerobot --> dev["devShell<br/>nix develop"]
+    gui --> app["nix run"]
+    gui --> mod["module NixOS<br/>services.lerobot"]
+    mod --> iso["ISO live<br/>kiosque"]
+    mod --> vm["test VM<br/>(CI)"]
+```
+
 ## Vérifié, pas promis
 
 ```bash
@@ -31,6 +54,17 @@ nix flake check   # imports Python, tests unitaires de la GUI, et une VM NixOS c
 Le test [tests/vm.nix](tests/vm.nix) démarre une vraie machine NixOS avec le module activé. Il vérifie que le service démarre, que la GUI répond et que les permissions sont en place. La CI GitHub le relance à chaque push.
 
 Pour vérifier la reproductibilité vous-même : `nix build .#lerobot-gui --rebuild` reconstruit le paquet et **échoue si le résultat diffère au moindre bit**.
+
+## État du projet
+
+| Élément | État |
+|---|---|
+| Build de LeRobot, du pilote Feetech et de la GUI | ✅ CI |
+| Reconstruction identique au bit près (`--rebuild`) | ✅ vérifié en local |
+| Tests unitaires de la GUI, test VM NixOS (service, page, permissions) | ✅ CI |
+| ISO live : démarrage jusqu'à la GUI en kiosque | ✅ vérifié en VM (QEMU) |
+| Checkpoint ACT entraîné en LeRobot 0.4.1, inférence en 0.6.0 | ✅ vérifié en local (CPU) |
+| Bras SO-101 réels : téléopération, enregistrement, entraînement | ⏳ utilisés avec l'ancien environnement pip (dataset de 10 épisodes, politique ACT entraînée) ; à revalider avec ce flake |
 
 ## Contenu
 
@@ -46,6 +80,7 @@ Pour vérifier la reproductibilité vous-même : `nix build .#lerobot-gui --rebu
 | `scripts/` | Scripts CLI : `diagnostic`, `teleoperate`, `record`, `replay`, `train`, `run_policy`, `visualize`, `find_cameras` |
 | `urdf/SO101/` | Modèle URDF du bras, repris de [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) (Apache-2.0) |
 | `shell.nix` | Compatibilité `nix-shell` : renvoie vers le même environnement que `nix develop` |
+| `lerobot-gui/` (docs) | [README](lerobot-gui/README.md), [QUICKSTART](lerobot-gui/QUICKSTART.md), [CONNECT_ROBOTS](lerobot-gui/CONNECT_ROBOTS.md), [TROUBLESHOOTING](lerobot-gui/TROUBLESHOOTING.md), [CHANGELOG](lerobot-gui/CHANGELOG.md) |
 
 ## Sur NixOS : le module
 
@@ -113,7 +148,7 @@ lerobot-rollout --strategy.type=base --policy.path=outputs/train/…/pretrained_
 ## Limites
 
 - **x86_64-linux uniquement** pour l'instant.
-- **CPU par défaut** : la machine de développement a un GPU Intel. Pour CUDA, importer nixpkgs avec `config = { allowUnfree = true; cudaSupport = true; }` ; torch sera alors recompilé ou pris sur le cache CUDA de la communauté Nix.
+- **CPU par défaut** : la machine de développement a un GPU Intel. Pour CUDA, importer nixpkgs avec `config = { allowUnfree = true; cudaSupport = true; }` ; torch est alors recompilé (plusieurs heures) sauf si un cache binaire CUDA est configuré.
 - **LeRobot 0.6.0** (celui de nixpkgs). Un checkpoint ACT entraîné en 0.4.1 se charge et infère correctement en 0.6.0 (vérifié).
 - **`scripts/move_ee.py`** (déplacement cartésien de la pince) dépend de `placo`, pas encore empaqueté dans nixpkgs : il ne tourne pas tel quel dans le flake.
 
