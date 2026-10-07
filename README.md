@@ -55,12 +55,18 @@ Le test [tests/vm.nix](tests/vm.nix) démarre une vraie machine NixOS avec le mo
 
 Pour vérifier la reproductibilité vous-même : `nix build .#lerobot-gui --rebuild` reconstruit le paquet et **échoue si le résultat diffère au moindre bit**.
 
+Exemple concret (7 octobre 2026, commit `393a2b6`) : le runner GitHub Actions et un portable NixOS ont construit la GUI indépendamment et obtenu **le même chemin**, `/nix/store/yxcg2r11vcv6krf2nzqkfqm5cniynhnp-lerobot-gui-2.2.0`. Sur le portable, `--rebuild` a ensuite redonné un résultat identique au bit près.
+
+```bash
+nix build github:bdv89/lerobot-nix-laboratory/393a2b6#lerobot-gui --print-out-paths
+```
+
 ## État du projet
 
 | Élément | État |
 |---|---|
 | Build de LeRobot, du pilote Feetech et de la GUI | ✅ CI |
-| Reconstruction identique au bit près (`--rebuild`) | ✅ vérifié en local |
+| Même résultat sur GitHub Actions et en local ; `--rebuild` identique au bit près | ✅ vérifié |
 | Tests unitaires de la GUI, test VM NixOS (service, page, permissions) | ✅ CI |
 | ISO live : démarrage jusqu'à la GUI en kiosque | ✅ vérifié en VM (QEMU) |
 | Checkpoint ACT entraîné en LeRobot 0.4.1, inférence en 0.6.0 | ✅ vérifié en local (CPU) |
